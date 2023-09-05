@@ -2,15 +2,22 @@ const SmartApp = require('@smartthings/smartapp');
 
 async function handleContactSensor(ctx, eventData, eventTime) {
     console.log('handleContactSensor() is called...');
+    console.log('ctx.config.camera',ctx.config.camera)
 }
 
 async function handleMotionSensor(ctx, eventData, eventTime) {
-    console.log('handleMotionSensor() is called...');
+    console.log('motion oN')
+    console.log('ctx.config.camera', ctx.config.camera)
+    ctx.api.devices.sendCommands(ctx.config.camera, 'switch', 'off')
 }
 
 async function handleButton(ctx, eventData, eventTime) {
     console.log('handleButton() is called...');
+
 }
+// async function handleVideoSensor(ctx, eventData, eventTime){
+    
+// }
 
 module.exports = new SmartApp()
     .configureI18n()
@@ -26,16 +33,20 @@ module.exports = new SmartApp()
                 .required(true);
 
             // (2) https://developer.smartthings.com/docs/devices/capabilities/capabilities-reference#motionSensor
-            section.deviceSetting('motionSensor')
-                .capabilities(['motionSensor'])
-                .permissions('r')
+            section.deviceSetting('camera')
+                .capabilities(['videoCapture','switch'])
+                .permissions('rx')
                 .required(true);     
                 
             // (3) https://developer.smartthings.com/docs/devices/capabilities/capabilities-reference#button
             section.deviceSetting('smartButton')
                 .capabilities(['button'])
                 .permissions('r')
-                .required(true);                
+                .required(true);
+            // section.deviceSetting('camera')
+            //     .capabilities(['videoCapture'])
+            //     .permissions('r')                
+            //     .required(false);
         });
     })
     .updated(async (context, updateData) => {
@@ -44,12 +55,14 @@ module.exports = new SmartApp()
             (context.config.contactSensor,
                 'contactSensor', 'contact', 'contactSensorHandler');
         await context.api.subscriptions.subscribeToDevices
-            (context.config.contactSensor,
+            (context.config.camera,
                 'motionSensor', 'motion', 'motionSensorHandler');
         await context.api.subscriptions.subscribeToDevices
-            (context.config.contactSensor,
-                'button', 'button', 'buttonHandler');        
+            (context.config.smartButton,
+                'button', 'button', 'buttonHandler');
+               
     })
     .subscribedEventHandler('contactSensorHandler', handleContactSensor)
     .subscribedEventHandler('motionSensorHandler', handleMotionSensor)
-    .subscribedEventHandler('buttonHandler', handleButton);
+    .subscribedEventHandler('buttonHandler', handleButton)
+
